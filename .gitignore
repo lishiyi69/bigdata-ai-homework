@@ -1,0 +1,48 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+
+# ---------- Jupyter ----------
+.ipynb_checkpoints/
+*.nbinteractive.json
+
+# ---------- 数据与模型（大文件不入库） ----------
+data/
+datasets/
+*.h5
+*.hdf5
+*.pkl
+*.pt
+*.pth
+*.onnx
+*.ckpt
+*.parquet
+*.feather
+*.npy
+*.npz
+
+# ---------- IDE / 编辑器 ----------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ---------- 系统 ----------
+.DS_Store
+Thumbs.db
+
+# ---------- 日志 ----------
+*.log
