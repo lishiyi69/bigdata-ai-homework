@@ -1,4 +1,4 @@
-# 作业 02 — 概念学习资料生成（Agent × 上下文 × Skill）
+# 作业 — 概念学习资料生成（Agent × 上下文 × Skill）
 
 > 大数据与人工智能 · 课程作业
 > 学号 / GitHub：lishiyi69
