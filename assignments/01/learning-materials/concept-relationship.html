@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="2DugPsWvSO8tJLVdGouK1C">
+<head data-page-node-id="Di3pjXFt1U9qsAeGHE306a">
+<meta charset="UTF-8" data-page-node-id="CuNxrXolGCA8NHFpcJXtBF">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="UzGl647rfUQvKCAkxc2wRe">
+<title>Agent × 上下文 × Skill 概念关系</title>
+<style>
+  :root {
+    --c-bg: #fafafa;
+    --c-card: #ffffff;
+    --c-text: #1f2328;
+    --c-muted: #57606a;
+    --c-border: #d0d7de;
+    --c-agent: #0969da;
+    --c-agent-bg: #ddf4ff;
+    --c-ctx: #8250df;
+    --c-ctx-bg: #fbefff;
+    --c-skill: #cf222e;
+    --c-skill-bg: #ffebe9;
+    --c-warn: #9a6700;
+    --c-warn-bg: #fff8c5;
+    --c-good: #1a7f37;
+    --c-good-bg: #dafbe1;
+    --c-code-bg: #f6f8fa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--c-bg);
+    color: var(--c-text);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    line-height: 1.7;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 32px 24px 80px; }
+  header.hero {
+    background: linear-gradient(135deg, #ddf4ff 0%, #fbefff 50%, #ffebe9 100%);
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    padding: 28px 28px 24px;
+    margin-bottom: 24px;
+  }
+  header.hero h1 { margin: 0 0 6px; font-size: 28px; }
+  header.hero .meta { color: var(--c-muted); font-size: 14px; }
+  header.hero .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    color: #fff; font-size: 12px; margin-right: 6px;
+  }
+  .b-agent { background: var(--c-agent); }
+  .b-ctx { background: var(--c-ctx); }
+  .b-skill { background: var(--c-skill); }
+  section {
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  h2 {
+    font-size: 20px; margin: 0 0 14px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--c-code-bg);
+  }
+  h3 { font-size: 16px; margin: 16px 0 8px; }
+  .h-agent { color: var(--c-agent); }
+  .h-ctx { color: var(--c-ctx); }
+  .h-skill { color: var(--c-skill); }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 24px; }
+  li { margin: 4px 0; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px;
+  }
+  th, td { border: 1px solid var(--c-border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--c-code-bg); font-weight: 600; }
+  .callout {
+    border-left: 4px solid var(--c-agent);
+    background: var(--c-agent-bg);
+    padding: 10px 14px; border-radius: 0 6px 6px 0;
+    margin: 12px 0; font-size: 14px;
+  }
+  .warn { border-left-color: var(--c-warn); background: var(--c-warn-bg); }
+  .good { border-left-color: var(--c-good); background: var(--c-good-bg); }
+  code, pre {
+    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  }
+  code { background: var(--c-code-bg); padding: 1px 6px; border-radius: 4px; }
+  pre {
+    background: var(--c-code-bg); padding: 12px 14px; border-radius: 6px;
+    overflow-x: auto;
+  }
+  svg { display: block; margin: 16px auto; max-width: 100%; height: auto; }
+  .footer-note {
+    color: var(--c-muted); font-size: 13px; text-align: center; margin-top: 28px;
+  }
+</style>
+</head>
+<body data-page-node-id="CAFxta2sBuTaS2lFbyk2Ey">
+<div class="wrap" data-page-node-id="dLRoAoIKDU4khFTb0m9CBI">
+
+<header class="hero" data-page-node-id="HRmT1Tbgb5CKA10Wwb6vb2">
+  <h1 data-page-node-id="v8Sva1IiED6704Jytt0EiE">Agent × 上下文 × Skill —— 三个概念的关系</h1>
+  <div class="meta" data-page-node-id="ACKZhgtNxvHRzgFdD0HNhH">
+    <span class="badge b-agent" data-page-node-id="kxDd7UIAG5Skv0kEQWmyGv">Agent</span>
+    <span class="badge b-ctx" data-page-node-id="fac8rO0tHmMRtwotJjaTAL">上下文</span>
+    <span class="badge b-skill" data-page-node-id="oajFoutDOSOUBhDLYW0knk">Skill</span>
+    生成于 2026-09-04 · 使用 concept-study-pack Skill
+  </div>
+  <p data-page-node-id="pP8kuRIQj0umVAmSpMUz3K">三个概念看似独立，实则构成 AI Agent 系统的"三角支撑"：<b class="h-agent" data-page-node-id="PNRlVakCzTRJiCsmYVkFsh">Agent</b> 是行为主体，<b class="h-ctx" data-page-node-id="getywcUqqfvlFLam3mHA8s">上下文</b> 是它的"短期记忆"，<b class="h-skill" data-page-node-id="Q4N5pouLfldaBs4D5d2sMG">Skill</b> 是它能按需调用的"扩展能力"。</p>
+</header>
+
+<!-- 总览图 -->
+<section data-page-node-id="wVQDpVrDGTfCThCI4gIX2r">
+  <h2 data-page-node-id="GM1uk8LQlxVvBV1Wcr4uNf">1. 三者关系总览（一张图）</h2>
+  <svg viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Agent 上下文 Skill 三角关系图" data-page-node-id="CsJhXcbB9RYEFPAAAz6IuA">
+    <defs data-page-node-id="FErLaHqfc69pNsLzeSeCdG">
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse" data-page-node-id="48xTTlSXbHe68VBuEYgkH1">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a" data-page-node-id="ju63Fs1pX2EesSX2xTsxqH"/>
+      </marker>
+    </defs>
+
+    <!-- 中心：执行循环 -->
+    <circle cx="360" cy="240" r="55" fill="#fff" stroke="#57606a" stroke-width="2" stroke-dasharray="4 4" data-page-node-id="RrdTzxLWihgtyXWtcs2hE1"/>
+    <text x="360" y="235" text-anchor="middle" font-size="14" font-weight="600" fill="#1f2328" data-page-node-id="W6tp6dFw3d5lL08Qvx2T2l">执行循环</text>
+    <text x="360" y="253" text-anchor="middle" font-size="11" fill="#57606a" data-page-node-id="Ox7bsUtpfBzYBKNiW07EDM">Reason → Act → Observe</text>
+
+    <!-- Agent (左) -->
+    <rect x="40" y="180" width="180" height="120" rx="14" fill="#ddf4ff" stroke="#0969da" stroke-width="2" data-page-node-id="jEx9F42hWQniJtLSFjBLje"/>
+    <text x="130" y="215" text-anchor="middle" font-size="20" font-weight="700" fill="#0969da" data-page-node-id="7WjNPqIK06R7OKs5XjKVj7">Agent</text>
+    <text x="130" y="240" text-anchor="middle" font-size="12" fill="#1f2328" data-page-node-id="ntqiat2PJiwRTC1M1ARwI5">行为主体</text>
+    <text x="130" y="258" text-anchor="middle" font-size="12" fill="#1f2328" data-page-node-id="4Xf5T6LbK2S58hipk55CBh">规划 / 决策 / 行动</text>
+    <text x="130" y="282" text-anchor="middle" font-size="11" fill="#57606a" data-page-node-id="z2D1rZZNe98aLTUK89aEQh">LLM + Memory + Tools</text>
+
+    <!-- Context (上) -->
+    <rect x="270" y="40" width="180" height="100" rx="14" fill="#fbefff" stroke="#8250df" stroke-width="2" data-page-node-id="tDseq5FQPCVO7WREa2EU88"/>
+    <text x="360" y="72" text-anchor="middle" font-size="20" font-weight="700" fill="#8250df" data-page-node-id="91nyA3f1D02vL1xj3XKRLm">上下文窗口</text>
+    <text x="360" y="95" text-anchor="middle" font-size="12" fill="#1f2328" data-page-node-id="iXgZjArG7ySPhwvWqrZNdj">短期记忆 / 工作台</text>
+    <text x="360" y="115" text-anchor="middle" font-size="11" fill="#57606a" data-page-node-id="CGspLuXqtLFGTR8gjbFpgu">系统提示 + 历史 + 工具结果</text>
+
+    <!-- Skill (右) -->
+    <rect x="500" y="180" width="180" height="120" rx="14" fill="#ffebe9" stroke="#cf222e" stroke-width="2" data-page-node-id="Kb85XWUseAqZ4i3UxsrgnM"/>
+    <text x="590" y="215" text-anchor="middle" font-size="20" font-weight="700" fill="#cf222e" data-page-node-id="PE2BVMbpWEYzJDA4IVnOlM">Skill</text>
+    <text x="590" y="240" text-anchor="middle" font-size="12" fill="#1f2328" data-page-node-id="xiK3cBQvdJcBtg6HXfcMfx">可加载的能力包</text>
+    <text x="590" y="258" text-anchor="middle" font-size="12" fill="#1f2328" data-page-node-id="38GOmnmkLZ2iVTpLURDkAC">沉淀经验 / 按需注入</text>
+    <text x="590" y="282" text-anchor="middle" font-size="11" fill="#57606a" data-page-node-id="TTjHn8cYuaYg7F1rvjY2PP">SKILL.md + 脚本 + 资源</text>
+
+    <!-- Agent → Context：读写 -->
+    <line x1="220" y1="220" x2="280" y2="135" stroke="#57606a" stroke-width="1.5" marker-end="url(#arrow)" data-page-node-id="EbHl6fwJp6xrsDxx5fTu5A"/>
+    <line x1="280" y1="155" x2="220" y2="240" stroke="#57606a" stroke-width="1.5" marker-end="url(#arrow)" data-page-node-id="tKZ8xsr1UB2OeQiIXlDt8z"/>
+    <text x="240" y="170" font-size="11" fill="#57606a" data-page-node-id="aRnd3qRx3Yo0xYyP4ltBnV">读写</text>
+
+    <!-- Context → Skill：按需加载 -->
+    <line x1="440" y1="135" x2="500" y2="220" stroke="#cf222e" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)" data-page-node-id="9ynkbFNSCYfiMhMTd26GSB"/>
+    <line x1="500" y1="240" x2="440" y2="155" stroke="#cf222e" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)" data-page-node-id="OHt9qwxBWwSsTXfBZuCDGR"/>
+    <text x="455" y="170" font-size="11" fill="#cf222e" data-page-node-id="0nUlTOEv7sBptVTtk441Un">按需加载</text>
+
+    <!-- Agent → Skill：触发 -->
+    <line x1="220" y1="260" x2="500" y2="260" stroke="#cf222e" stroke-width="1.5" marker-end="url(#arrow)" data-page-node-id="Yx9nRIRC8nSUXIcRpLZq6Z"/>
+    <text x="360" y="252" text-anchor="middle" font-size="11" fill="#cf222e" data-page-node-id="K2n6s02nm2m7gcn4gi1qeC">Agent 触发：description 匹配后调用</text>
+
+    <!-- 底部说明 -->
+    <rect x="40" y="340" width="640" height="100" rx="8" fill="#f6f8fa" stroke="#d0d7de" data-page-node-id="6MorhnG1AGzlo0rwwQ5cUQ"/>
+    <text x="60" y="365" font-size="12" font-weight="600" fill="#1f2328" data-page-node-id="8ImKp1FRVEeabHW7cs7UQb">一句话闭环：</text>
+    <text x="60" y="385" font-size="12" fill="#1f2328" data-page-node-id="NTb3GviOOotOgcyTioOrGW">① Agent 接到任务 → ② 在上下文中推理 → ③ 发现任务匹配某个 Skill 的 description</text>
+    <text x="60" y="405" font-size="12" fill="#1f2328" data-page-node-id="yLyT3Rj7o4fCHz9Yyl3E0q">→ ④ 把该 Skill 的 SKILL.md 加载进上下文 → ⑤ 按 Skill 指引执行、调用工具、产出结果</text>
+    <text x="60" y="425" font-size="12" fill="#1f2328" data-page-node-id="U76DIIjjQtAcV96isjAtF2">→ ⑥ 工具结果回写上下文（占 token）→ ⑦ 继续下一轮直到任务完成。</text>
+  </svg>
+</section>
+
+<!-- 上下文如何影响 Agent -->
+<section data-page-node-id="lLYPjYmWgFLqdwu20TmQqI">
+  <h2 class="h-agent" data-page-node-id="KL9dnRtJd0jsTIfqexTU8R">2. 上下文如何影响 Agent 的工作</h2>
+  <p data-page-node-id="qAsIxHtO3rM28XCm0sZAjT">上下文窗口是 Agent 的"工作台大小"——它直接决定 Agent 能做多复杂、多长的任务。</p>
+
+  <h3 data-page-node-id="3NAhGwg7kQoMrQZCzqraXw">2.1 上下文决定 Agent 的"视野"</h3>
+  <ul data-page-node-id="InrxF1PlFZMChavxasn4th">
+    <li data-page-node-id="w3eK47VJsulWZ0YLrOLIuH"><b data-page-node-id="9HeD6lkMtR4nMyAMr1Qk5G">视野限制任务长度</b>：每轮 ReAct 循环的"思考→行动→观察"结果都回写进上下文。多步任务的 token 消耗是累加的——50 步的 Agent 任务轻松吃掉 50K+ token。</li>
+    <li data-page-node-id="deyndlmf9ImawBu2m5inxL"><b data-page-node-id="8PFE26IOHJRBgX4Z8cacRo">视野限制记忆</b>：超过窗口的早期指令、用户偏好、工具结果对 Agent 直接"消失"。这是 Agent 跑长任务时"失忆"和"重复试错"的主因。</li>
+    <li data-page-node-id="V6JUn7GJPxVzUYyzHPeWxj"><b data-page-node-id="YzoTKurgLbXB3soW37u2Jf">视野影响质量</b>：Lost in the middle 现象——关键事实放在长上下文中段被忽略的概率显著升高。</li>
+  </ul>
+
+  <h3 data-page-node-id="0SpUTmenl5oGlnGdxwcgZV">2.2 Agent 对上下文的"反作用"</h3>
+  <ul data-page-node-id="K2ZOE7FOrXscET5PPSQETc">
+    <li data-page-node-id="QNvljiu6J8JGUbk5l7LPRB"><b data-page-node-id="IsPXOVODjbmgpcQxvrfHoD">Agent 主动管理上下文</b>：成熟 Agent 会在窗口快满时调用"摘要压缩"工具，把历史浓缩成更短的表示。</li>
+    <li data-page-node-id="GRjCJMnBRlnnFlgeANa2Sh"><b data-page-node-id="thkDBydkALOrrLrtFo82ni">Agent 决定哪些信息进上下文</b>：通过 RAG 检索、工具结果过滤，只把当前步最相关的内容塞进窗口。</li>
+    <li data-page-node-id="ZOzknYzOigv6Alc2OcEnb7"><b data-page-node-id="oCsumVvLJ3G48vnDfp1pgM">Agent 把"目标"反复写回窗口</b>：避免目标感在长任务中丢失。</li>
+  </ul>
+
+  <div class="callout" data-page-node-id="Jr1PJjtucVHihVRrm44HSy">
+    <b data-page-node-id="rye1yaL4D4LudKZZyAg20M">工程含义：</b>设计 Agent 时，"上下文预算分配"和"任务规划"是同一件事。任务越复杂，越要主动设计"何时压缩、何时重读目标、何时丢弃旧观察"。
+  </div>
+
+  <h3 data-page-node-id="pS1yqBroU6u4Dbk6teUUrP">2.3 量化对照（参考 2024-2025 主流模型）</h3>
+  <table data-page-node-id="lPZArDtgFrKZ6HhDQSjUYp">
+    <thead data-page-node-id="3e4dgEbfvCXBS6pSWM140S"><tr data-page-node-id="CyTkNlR76MWA2WcCq1dHgJ"><th data-page-node-id="rjlKYiN5lABAPnVbajdnJw">模型</th><th data-page-node-id="k1aRNJVoDlE6sofWhlTqPO">上下文窗口</th><th data-page-node-id="T4B5fsN7mYcpF5CRZPBcCQ">对 Agent 的实际意义</th></tr></thead>
+    <tbody data-page-node-id="rL80DIHsN9Xk1LQayYlTbJ">
+      <tr data-page-node-id="iHmaUzip7LSDACrYvCamyl"><td data-page-node-id="h5STz8hzjbqViEbdb1wdEb">GPT-3.5（2022）</td><td data-page-node-id="Y3GAWOENGzP22M3ErCaOee">4K</td><td data-page-node-id="a32QeXMTOD8J9rEXXGdBHv">几轮对话 + 简单任务</td></tr>
+      <tr data-page-node-id="Sp5jpSWwUbFlc1DmwcYybV"><td data-page-node-id="nj5cPqJPjn8pu2Wm9L4PsC">GPT-4（2023）</td><td data-page-node-id="aYebhUyFm5SPDKCWas8whn">8K / 32K</td><td data-page-node-id="TmwuKH2oimjStcbeW0UoIz">中等复杂 Agent，单次任务</td></tr>
+      <tr data-page-node-id="Vi9GQAmrwVmCRK7ZFHotUY"><td data-page-node-id="P44fTlPOnWFY3wChutEgBx">Claude 3.5（2024）</td><td data-page-node-id="vC3kAzwkCjCxwTq87X27hg">200K</td><td data-page-node-id="upWCb9SQawyuMg1Vs03jls">可读整本书、长会话 Agent</td></tr>
+      <tr data-page-node-id="ItwBocAg1LoGEOYZIHEItC"><td data-page-node-id="MLyZFFXQPLTRAcEmOBNsAn">GPT-4o / Claude 3.7（2025）</td><td data-page-node-id="3x32X4kAKBHK4fLaHkGXOX">128K–200K</td><td data-page-node-id="sfsK1p2pxG3qxJD9tLSUOJ">代码库级 Agent</td></tr>
+      <tr data-page-node-id="LfswaaVy7CVrkTuvQU8pmY"><td data-page-node-id="RayA9y8ToUjTLVX1b0gU2h">Claude 4 / GPT-4.1（2025-2026）</td><td data-page-node-id="WGiy2zCLD7kJQiQ2Tl5TaE">500K–1M</td><td data-page-node-id="ZcdIl8jS67jDM60s34evHJ">长流程 Agent、跨会话记忆</td></tr>
+    </tbody>
+  </table>
+  <p style="color: var(--c-muted); font-size: 13px;" data-page-node-id="gRfxbZsqc51apCsgPOBUTD">注：以上为 2024-2026 业界公开数字，具体上限以各厂商最新发布为准。</p>
+</section>
+
+<!-- Skill 如何沉淀可复用知识 -->
+<section data-page-node-id="L8QRc3ZNXAKzoCbqh4WYBq">
+  <h2 class="h-skill" data-page-node-id="dbr47f6IC5laR17AzVGnkd">3. Skill 如何沉淀可复用的任务知识</h2>
+  <p data-page-node-id="1n8xYrZalZ7p9gcPjsZ0nh">Skill 是连接"人类经验"和"Agent 行为"的桥梁——它把分散在各处的"该这样做"沉淀成可版本化、可分发、可按需加载的能力单元。</p>
+
+  <h3 data-page-node-id="ZO5asmrFwn50AFn3zEWOHV">3.1 沉淀的对象：从"对话"到"资产"</h3>
+  <table data-page-node-id="NE5jCdfDB3YMgd4uc2OD9P">
+    <thead data-page-node-id="4Um2QZC7ZfFWwSEBy2CEsZ"><tr data-page-node-id="76B9Yq1Qm7jCeM9hX9ZHPp"><th data-page-node-id="RGLnYj3xdN9pFy4mm9mY3s">沉淀前</th><th data-page-node-id="aChxBV0lI4hGwk4kazpRz3">沉淀后（Skill）</th></tr></thead>
+    <tbody data-page-node-id="651jLKKbfHtS2gMTK6lJRA">
+      <tr data-page-node-id="x02LvgTfH9UciUT1H52Q7x"><td data-page-node-id="C3WW4QEYRJGMh6kuAQxmL9">每次贴一大段 prompt：<br data-page-node-id="1OOkCbzdFCCHEECAuYeXOC">"用我司模板写周报，3 段式……"</td><td data-page-node-id="4e7T2dDZUcU35fF90lOZ81">SKILL.md：<br data-page-node-id="vFgwwSPIXnHTCVZ6dUfbA2">description 触发 + 正文规定模板 + examples/ 给出样本</td></tr>
+      <tr data-page-node-id="McgD5ySedrP349WRgI8pEN"><td data-page-node-id="zeSxwxY8N5EiCzWOWWoWpT">团队代码评审标准散落在 Wiki / 群聊</td><td data-page-node-id="bfMgiMWDEUxLRPZG18ubmv">code-review-skill：<br data-page-node-id="9dvJPRzqIFoBzfVtX03m6X">新人+老员工+AI 评审都按同一标准出</td></tr>
+      <tr data-page-node-id="WZ8x2i4akUNYowe5qrJ05j"><td data-page-node-id="EkrIRUs1mIVOoqfAIb9yjp">反复调整 system prompt 试图让 AI 稳定输出</td><td data-page-node-id="QAknvSdLfFdcuKO7TSy9BV">针对性 Skill：<br data-page-node-id="hw8iR9TAK78dxbiDRn0lNu">触发即加载、关闭即释放，主 system prompt 保持稳定</td></tr>
+      <tr data-page-node-id="ISHJZ74pyHLCaEE0dySINz"><td data-page-node-id="KhPS1f0uhW9Zmk362v1eEo">脚本命令记在 shell history 或 README</td><td data-page-node-id="9tUAlvryOBd2Ot7nq9kmSm">scripts/validate.sh：<br data-page-node-id="SOS79HYXTNn6KUBUIPkOwa">AI 在 Skill 指引下调用，无需人记命令</td></tr>
+    </tbody>
+  </table>
+
+  <h3 data-page-node-id="917SCLtV0UkBCJmGRt40I9">3.2 沉淀的机制：四大属性</h3>
+  <ul data-page-node-id="yq9OCIqRMbLlPcYCqmfV0V">
+    <li data-page-node-id="D4VmMQLKEySXghXeQQDr33"><b data-page-node-id="lQGkZtu4evtDNQqnpCswwz">可版本化</b>：文件夹结构天然适合 Git，可回滚、可 diff、可 review。</li>
+    <li data-page-node-id="H6jwShjhOHr3nUD9oC7oG3"><b data-page-node-id="K522iter42PFTIYZfui1q4">可分发</b>：同 Skill 在 Claude.ai / Claude Code / API 通用；可放到 marketplace（Anthropic 2025-12 推出官方目录）。</li>
+    <li data-page-node-id="H2Uz3MgXtDT9I7m7Jix1M0"><b data-page-node-id="tSO4K6lP8IaAxjNRiwby8o">可复用</b>：一次写好，多个 Agent、多个项目、多个团队成员使用。</li>
+    <li data-page-node-id="sSAwfvc08xHrSg5pDiLHaf"><b data-page-node-id="Bk9baKAVxEESnqkAz8srm7">不污染主上下文</b>：未触发时不占窗口——这是 Skill 区别于"长 system prompt"的关键。</li>
+  </ul>
+
+  <h3 data-page-node-id="K2Qv8RfDIJ7yKnbbPWHdcn">3.3 Skill 与"上下文管理"的协同</h3>
+  <p data-page-node-id="405dpq3nLZymcVzogybJDm">Skill 的设计本身就是一种"上下文管理"：</p>
+  <pre data-page-node-id="6pDohd3OJBpmsiD3eGHo5k"><code data-page-node-id="CoW6J7T4cB2hgZ9Cs4pRKF">如果所有团队知识都塞进 system prompt：
+  → 每次对话都吃满 token
+  → 真正任务相关的内容被挤压
+  → 模型注意力分散，输出质量下降
+
+如果用 Skill 拆分：
+  → 系统 prompt 保持精简（只设全局规则）
+  → 各专题能力按需加载（命中才占窗口）
+  → 上下文利用率高、响应更快、cost 更低</code></pre>
+
+  <div class="callout good" data-page-node-id="FxMS5AGZiJ2ah8QmPFG6xv">
+    <b data-page-node-id="BB8ikJrAFo03CJeln2bfzO">沉淀飞轮：</b>人写 Skill → Skill 被 Agent 高频使用 → 发现 Skill 的不足 → 修改 Skill → 沉淀更稳定的能力。Skill 是"AI 团队的代码化文档"。
+  </div>
+</section>
+
+<!-- 三者协同的具体例子 -->
+<section data-page-node-id="4R4920u4H91SQiCaEaqNn1">
+  <h2 data-page-node-id="q0bf2V7TzgQ6lpNR0zmHLG">4. 三个概念协同的一个完整例子</h2>
+  <p data-page-node-id="qGKgi4jSJfUVOvsCzcIVLs">以"自动给新员工生成入职检查清单"为例，看三者怎么配合：</p>
+  <ol data-page-node-id="pah4DcS1W8LVfOxSHZ8Dwi">
+    <li data-page-node-id="UH0POoBtZUhYtDVDy41J9Z">
+      <b class="h-agent" data-page-node-id="Clov7OZNK4qQHHaYXxjLby">用户 → Agent</b>：HR 跟 AI 助手说"给新同学张三代办入职清单，岗位是数据分析师"。
+    </li>
+    <li data-page-node-id="pUjEpMloBo4afpv7TWkg2B">
+      <b class="h-ctx" data-page-node-id="9auy2B9tCXLAv6el7RxOo7">Agent 读上下文</b>：上下文里有系统提示（"你是 HR 助手"）、历史对话、当前用户输入。
+    </li>
+    <li data-page-node-id="1hkP179QZmuyXpBq5KoUJe">
+      <b class="h-skill" data-page-node-id="XPym4taeXudGHaxUKyl8N5">Agent 匹配 Skill</b>：发现任务匹配 <code data-page-node-id="dfptgfyjaljWKsKo4JmHKd">onboarding-checklist</code> Skill 的 description（"为新员工生成入职流程"），把它的 SKILL.md 加载进上下文。
+    </li>
+    <li data-page-node-id="y2X2iKxQauGRcK1NtkwetG">
+      <b class="h-skill" data-page-node-id="FQ6IunvcQ8vg1BsO45XakA">Skill 指引执行</b>：SKILL.md 规定要调用 HR 系统 API、读取岗位模板、生成按部门差异化的清单。
+    </li>
+    <li data-page-node-id="kw9vTdnuPnuBmcAImkSgjb">
+      <b class="h-ctx" data-page-node-id="v9f0A17OJ63IxqGSENhhWX">工具结果回写上下文</b>：HR API 返回结果约 800 token，岗位模板约 400 token，都写进上下文（窗口占用 ↑）。
+    </li>
+    <li data-page-node-id="5q6p3Is72djHOYUYUAhQGM">
+      <b class="h-agent" data-page-node-id="S3zsKegSMXllmCtVJcJIst">Agent 综合推理</b>：基于"系统提示 + Skill 指引 + 工具结果 + 用户输入"生成最终清单。
+    </li>
+    <li data-page-node-id="4aqafcOoDTsbi69eXGh4e6">
+      <b class="h-ctx" data-page-node-id="t63dGeuDifeAepDeKsgakt">窗口管理</b>：若这是长会话，Agent 在上下文快满时主动压缩历史，保留"张三是数据分析师"这一关键信息。
+    </li>
+  </ol>
+  <p data-page-node-id="JE0JgJMSuT6FeiCjHCKufi">整个过程，<b data-page-node-id="YRv7jn0pBBs7HKL7CR6Zzk">Skill 解决了"怎么做"</b>，<b data-page-node-id="EAPXV0Nynt3uPPvlKpW6Ro">上下文解决了"看到什么"</b>，<b data-page-node-id="G2guw4ZAF02wDVFTTNtVw7">Agent 解决了"做不做、按什么顺序做"</b>——三者缺一不可。</p>
+</section>
+
+<!-- 关系速查表 -->
+<section data-page-node-id="BN1ReKFE6KBHeumt4D8IRY">
+  <h2 data-page-node-id="BwZQhmjgpVAEGdS48AgIYY">5. 关系速查表</h2>
+  <table data-page-node-id="KLGeXv7XM917SF9jL9VNOm">
+    <thead data-page-node-id="EhEpIlfqpcMDDiLe9r6dFF">
+      <tr data-page-node-id="wUIFbhfGCt7ogXFxFE4yeU"><th data-page-node-id="0UadhkkmKPLhJQL6cF3HFQ">关系</th><th data-page-node-id="jGzEGsZEd6GpalvKjxHJjt">方向</th><th data-page-node-id="eftUb1oSvjH4WW01AksVsv">内容</th><th data-page-node-id="2md464vZGGNc7K2GUaEO1R">失效条件</th></tr>
+    </thead>
+    <tbody data-page-node-id="pHZ6X9K9IvxaRDG1eeSQAP">
+      <tr data-page-node-id="YBXhSctTVlDgjdxINqohXF">
+        <td data-page-node-id="OyttmZqFOFN0STUEtSBc3x">Agent → 上下文</td><td data-page-node-id="ICQ1812H45Eboz1qOgK76f">读写</td><td data-page-node-id="mQP8u80rSvhgGaoYTvhlM2">Agent 在上下文里推理；每轮结果回写</td>
+        <td data-page-node-id="nyx9CL1Fjbc76O7CQKoT2k">窗口溢出 → 早期指令丢失 → Agent 失忆</td>
+      </tr>
+      <tr data-page-node-id="w4clOKO5ZGOjp3UfqIB54s">
+        <td data-page-node-id="ZpuSfqIW9S8JjYonkQmANN">上下文 → Skill</td><td data-page-node-id="6zRUHK5mzSGoqUxBoJvfUj">加载 / 释放</td><td data-page-node-id="Oc48mk7FfJyxANoyEtVbKR">命中时加载，未命中不占</td>
+        <td data-page-node-id="kdL20kCGgSxlSPaxkkKHds">描述写得不好 → 永远不命中 / 误触发</td>
+      </tr>
+      <tr data-page-node-id="WzHTLyMi0nmUNShCVBgoDL">
+        <td data-page-node-id="EUSAONImkFDxggNTPMzMix">Agent → Skill</td><td data-page-node-id="YvuGpDolZsCBlGcbUHmHGY">触发</td><td data-page-node-id="yg0qgS79T2SVslkhAaIjsO">Agent 读 description 决定是否调用</td>
+        <td data-page-node-id="CeuzlPrxGWDZcbbHk4Gtaj">Skill 太多 → 路由变慢 / 误匹配</td>
+      </tr>
+      <tr data-page-node-id="VqgxGwvnWQBYTEZKDzPpHp">
+        <td data-page-node-id="zDdWTgKs6D4z67ZwTORVHF">Skill → 上下文</td><td data-page-node-id="Y4irQw1n1NjmVBmNNwUa7A">注入</td><td data-page-node-id="5NgbfS0kpc8qYPtHQjy21H">加载后占窗口 token</td>
+        <td data-page-node-id="pkUjRiwufzrieNZY9YPZ46">Skill 内容过大 → 挤占任务 token</td>
+      </tr>
+      <tr data-page-node-id="iancfxm3wsJXvAsx8hmcfK">
+        <td data-page-node-id="H6E9VkLOk0XZRNwccwGmzF">Agent → 上下文 → Skill</td><td data-page-node-id="pFW2e4uaboyc4TZbNSBSVS">协同</td><td data-page-node-id="CQTqPqnLlurgIIbwIiq8P3">Agent 决策、上下文提供视野、Skill 注入能力</td>
+        <td data-page-node-id="IjPGiFeIFS4Rq5bEKIuzfw">三者任一设计失衡 → 系统不稳定</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 常见误解 -->
+<section data-page-node-id="dxmeW7y32zr2JXzpWvdYPE">
+  <h2 data-page-node-id="4fZ6I7SN9FjBdkpP3CAk7J">6. 常见误解与澄清</h2>
+  <ul data-page-node-id="IijCu4DCVfQdeJfjVwbFqp">
+    <li data-page-node-id="vlTCF0NhXZlHn8ns6I9U0y"><b data-page-node-id="pLW3wIBUPTwz6ODzMdIYaa">误解：</b>"Agent 就是 Skill 的组合"。<b data-page-node-id="peKXnyGXSwa1GCS23VeHHE">澄清：</b>Skill 只是 Agent 可调用的能力之一；Agent 还有记忆、规划、工具调用等"自有"组件，Skill 是外挂的扩展。</li>
+    <li data-page-node-id="8ySJvXoKWML6Ysq5RCUFjC"><b data-page-node-id="tRAoHLInxpQoHuScxAaH0y">误解：</b>"上下文越大 Agent 越强"。<b data-page-node-id="cLJqV71cyi3ASJBGnLk8yn">澄清：</b>上下文扩大的同时计算成本 O(N²) 增长、Lost in the middle 加剧；要做的是"有效信息密度"，不是"无限堆 token"。</li>
+    <li data-page-node-id="GAEpZQ2O8UcxW0mNSqLxZw"><b data-page-node-id="npMPA1AO0bfFa3qmnajtzX">误解：</b>"Skill 等于 prompt 模板"。<b data-page-node-id="s8hQsAPDLWf17xaAp7dvpy">澄清：</b>Skill 含目录结构、YAML 元数据、可执行脚本；按需加载且不污染主上下文——这是 prompt 模板做不到的。</li>
+    <li data-page-node-id="6qn9SnDJE53JZCAWH8mzcD"><b data-page-node-id="d1eTAIMLHGFMZqcfHD1FfS">误解：</b>"三个概念可以分开学"。<b data-page-node-id="FomWswnyjmXUureDDHxa91">澄清：</b>它们互为约束：没有上下文就没有 Agent 推理；没有 Skill 就只能把所有指令塞进 prompt（吃 token）；没有 Agent，Skill 只是静态文档。</li>
+  </ul>
+</section>
+
+<!-- 自测题 -->
+<section data-page-node-id="B4ZVrg9IHgks0gRaeA8C7d">
+  <h2 data-page-node-id="1cfQqRCzaxAHdhab0YUqJN">7. 自测题</h2>
+  <details data-page-node-id="hC9SsfGJS4zD5ArtwOnlaZ">
+    <summary data-page-node-id="Kpln3WSKOheahJfeWNYysc">Q1：为什么"上下文大小"直接限制 Agent 能跑多复杂的任务？</summary>
+    <p data-page-node-id="MyGxzPoNDr3e6tAH1vRUPY"><b data-page-node-id="3JJFL6VrAHUt0j4YJGcgzH">参考答案：</b>Agent 每一步"思考/观察"结果都要回写进上下文。多步任务 token 累加，超过窗口后早期指令/记忆对模型直接"消失"，Agent 会"失忆"或"重复试错"。窗口越大、压缩/检索策略越好，Agent 能跑的任务越长。</p>
+  </details>
+  <details data-page-node-id="ff5eVX9l36qHbkvbFB5Y6S">
+    <summary data-page-node-id="DkXFSv57CKxcER9GRFZUmM">Q2：Skill 为什么说"沉淀可复用的任务知识"？举一个具体例子。</summary>
+    <p data-page-node-id="DdgS0FP4FJHLwFR6i01CxU"><b data-page-node-id="1wb4b3jc8VSnOdKRgo2Dmz">参考答案：</b>因为 Skill 把"做事方法"（步骤、模板、脚本、判定标准）从 prompt 里抽出来做成文件夹，可以版本控制、跨项目共享、按需加载。例如把"团队 PR Review 规范"做成 code-review-skill，新人、老员工、AI 评审都按同一标准出稿，避免每次重新说明。</p>
+  </details>
+  <details data-page-node-id="FlSeZN6fhPR10dsn06m5uy">
+    <summary data-page-node-id="KcoXB3UOWbi6XTnBSWbbw1">Q3：如果 Agent 跑长任务时频繁"重复试错"，最可能是哪个概念出问题？怎么修？</summary>
+    <p data-page-node-id="HpwL2d0Xnb8BhLoCTojzBi"><b data-page-node-id="b2zqEAOUDKQ8C3pFO4ShtJ">参考答案：</b>最可能是<b data-page-node-id="zlWhC0Yqh8qo3HOnlV6cVe">上下文</b>出问题：窗口快满导致早期目标/约束被截断。修法：(1) 主动做上下文摘要压缩；(2) 把"任务目标"反复注入；(3) 拆任务为子任务；(4) 用 Skill 减少每次都贴的长 prompt。</p>
+  </details>
+  <details data-page-node-id="eRu2qC89fSv8t8Zlc3ETx3">
+    <summary data-page-node-id="MSZ8I159T0vQmz32RBegx9">Q4：把"团队所有经验"全塞进 system prompt，会带来什么后果？用 Skill 怎么解？</summary>
+    <p data-page-node-id="MQ3oHJAnmEzoHsFmaN3L1n"><b data-page-node-id="Md101zuqsAWzIjTI5d6edi">参考答案：</b>后果：每次对话都吃满 token，模型注意力被无关内容分散，关键指令被淹没，cost 暴涨，输出质量反而下降。用 Skill 解决：把团队经验按"专题"切成多个 Skill（如品牌规范、代码评审、客户话术），各 Skill 保持精简，由 Agent 按 description 匹配后按需加载，主 system prompt 保持稳定简短。</p>
+  </details>
+  <details data-page-node-id="qBDiuwpz77lTaHMSwFzFl6">
+    <summary data-page-node-id="cF9c9ffs3ybc8XEt3QPsCc">Q5：请用一句话讲清 Agent / 上下文 / Skill 三者的关系。</summary>
+    <p data-page-node-id="8pN36nQGfpy0g5WA98Vf8w"><b data-page-node-id="Pk3HrQUkABHLtrlxno9TVC">参考答案：</b>Agent 是"做决定的大脑"，上下文是它"看到的工作台"，Skill 是它"按需调用的工具书"——Skill 在需要时被加载进上下文供 Agent 使用，三者协同完成复杂任务。</p>
+  </details>
+</section>
+
+<!-- 参考来源 -->
+<section data-page-node-id="Hee6D8Sew40GCb87Q0VcUL">
+  <h2 data-page-node-id="LNf8MgUudKfUJQBDFoxLmM">8. 参考来源</h2>
+  <ol data-page-node-id="Dvhwqkvq5oRKNOT4XGSkEE">
+    <li data-page-node-id="l0Vud35Ceh5lXB0wUxKJeJ">本作业项目内的三份独立资料：<a href="./agent.html" data-page-node-id="QBolb0pbf6PGq7sCs4DgQc">agent.html</a>、<a href="./llm-context.html" data-page-node-id="XNbEIW9cWcFHe0thKWTzeN">llm-context.html</a>、<a href="./skill.html" data-page-node-id="dGSON9KBoO3ocDFnIW0ioO">skill.html</a>。</li>
+    <li data-page-node-id="VbXzbSevPA1B6onFoYheIa">[Anthropic - Building Effective Agents](https://www.anthropic.com/research/building-effective-agents) — Agent 的官方定义、Workflow vs Agent 区分。</li>
+    <li data-page-node-id="eZx2K0GFVDFsAQpUzRM82V">[Anthropic - Skills explained](https://claude.com/blog/skills-explained) — Skill 与 Prompt/Project/Subagent/MCP 的关系。</li>
+    <li data-page-node-id="SPUvZd4pyf8Ul236VWzCYS">[IBM - What is a context window?](https://www.ibm.com/think/topics/context-window) — 上下文窗口的硬性架构边界。</li>
+    <li data-page-node-id="iRLTO57YxSN1kcbIvHPGbh">[Lilian Weng - LLM Powered Autonomous Agents](https://lilianweng.github.io/posts/2023-06-23-agent/) — Agent = LLM + Memory + Planning + Tool Use 公式。</li>
+  </ol>
+  <p class="footer-note" data-page-node-id="8k3QYuRLUift5X7s750Any">本页为综合关系图，论断可回到三份独立资料里逐项核查。</p>
+</section>
+
+</div>
+</body>
+</html>
