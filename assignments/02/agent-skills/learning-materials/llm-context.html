@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大模型的上下文 概念学习资料</title>
+<style>
+  :root {
+    --c-bg: #fafafa;
+    --c-card: #ffffff;
+    --c-text: #1f2328;
+    --c-muted: #57606a;
+    --c-border: #d0d7de;
+    --c-accent: #8250df;
+    --c-accent-bg: #fbefff;
+    --c-warn: #9a6700;
+    --c-warn-bg: #fff8c5;
+    --c-good: #1a7f37;
+    --c-good-bg: #dafbe1;
+    --c-code-bg: #f6f8fa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--c-bg);
+    color: var(--c-text);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    line-height: 1.7;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 32px 24px 80px; }
+  header.hero {
+    background: linear-gradient(135deg, #fbefff 0%, #f6f8fa 100%);
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    padding: 28px 28px 24px;
+    margin-bottom: 24px;
+  }
+  header.hero h1 { margin: 0 0 6px; font-size: 28px; }
+  header.hero .meta { color: var(--c-muted); font-size: 14px; }
+  header.hero .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    background: var(--c-accent); color: #fff; font-size: 12px; margin-right: 6px;
+  }
+  section {
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  h2 {
+    font-size: 20px; margin: 0 0 14px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--c-accent-bg);
+  }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--c-accent); }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 24px; }
+  li { margin: 4px 0; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px;
+  }
+  th, td { border: 1px solid var(--c-border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--c-code-bg); font-weight: 600; }
+  .callout {
+    border-left: 4px solid var(--c-accent);
+    background: var(--c-accent-bg);
+    padding: 10px 14px; border-radius: 0 6px 6px 0;
+    margin: 12px 0; font-size: 14px;
+  }
+  .warn { border-left-color: var(--c-warn); background: var(--c-warn-bg); }
+  .good { border-left-color: var(--c-good); background: var(--c-good-bg); }
+  code, pre {
+    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  }
+  code { background: var(--c-code-bg); padding: 1px 6px; border-radius: 4px; }
+  pre {
+    background: var(--c-code-bg); padding: 12px 14px; border-radius: 6px;
+    overflow-x: auto;
+  }
+  details { margin: 8px 0; }
+  summary {
+    cursor: pointer; font-weight: 600; color: var(--c-accent);
+    padding: 6px 0;
+  }
+  details[open] summary { margin-bottom: 6px; }
+  .refs ol { padding-left: 24px; }
+  .refs li { margin: 6px 0; font-size: 14px; }
+  .meta-table td:first-child { width: 160px; font-weight: 600; background: var(--c-code-bg); }
+  svg { display: block; margin: 12px auto; max-width: 100%; height: auto; }
+  .footer-note {
+    color: var(--c-muted); font-size: 13px; text-align: center; margin-top: 28px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>大模型的上下文（Context Window）概念学习资料</h1>
+  <div class="meta">
+    <span class="badge">概念</span>
+    <span class="badge">大模型 / Transformer</span>
+    生成于 2026-09-04 · 使用 concept-study-pack Skill
+  </div>
+  <p>学完这份资料，你将能用自己的话解释"上下文窗口"是什么、为什么它有上限、它和系统提示、RAG、长期记忆的关系，以及实际工程中常见的"长上下文陷阱"。</p>
+</header>
+
+<!-- 1. 学习目标 -->
+<section>
+  <h2>1. 学习目标</h2>
+  <ol>
+    <li>用自己的话解释"上下文窗口（context window）"是什么、它的硬性边界在哪。</li>
+    <li>说明上下文窗口的工程上限来自 Transformer 自注意力机制的 O(N²) 计算复杂度。</li>
+    <li>区分上下文窗口、系统提示（system prompt）、RAG、长期记忆四种信息来源。</li>
+    <li>识别"Lost in the middle"现象及其对长上下文设计的影响。</li>
+    <li>理解 KV-Cache 机制及其对显存和延迟的影响。</li>
+  </ol>
+</section>
+
+<!-- 2. 核心问题 -->
+<section>
+  <h2>2. 核心问题</h2>
+  <ol>
+    <li>为什么大模型一次只能"看"有限长度的输入？这背后是软件限制还是数学限制？</li>
+    <li>把上下文从 4K 扩到 128K 甚至 1M 到底付出了什么代价？</li>
+    <li>为什么有时把关键信息放在中间，模型反而"看不见"？</li>
+    <li>为什么多轮对话久了模型会"失忆"？这是 bug 还是设计？</li>
+    <li>系统提示、RAG、长期记忆、上下文窗口这四个词到底怎么区分？</li>
+  </ol>
+</section>
+
+<!-- 3. 个人解释 -->
+<section>
+  <h2>3. 个人解释</h2>
+  <div class="callout">
+    一句话：<b>上下文窗口是大模型一次推理时能"同时看到"的最大 token 数</b>，是 Transformer 自注意力机制的硬性工程边界——超过它的内容模型直接看不见，不会"记住"，更不会"理解"。
+  </div>
+  <p>用一个日常类比：你正在读一本悬疑小说，但你的短期记忆只够装 50 页。当你读到第 80 页时，第 1 章里的关键线索已经从你脑子里掉光了——除非有人提醒你。上下文窗口就是模型的那个"短期记忆容量"，单位是 token（一个 token 大约等于 0.75 个英文单词或 1-2 个汉字）。</p>
+  <p>这个"窗口"为什么不能无限大？因为 Transformer 在每一层都要让当前 token 和前面所有 token 做一次"相互打量"——这叫自注意力。如果窗口里有 N 个 token，单层就要算 N×N 次关系。N 翻倍，计算量变成 4 倍；N 变成 10 倍，计算量变成 100 倍。这就是 O(N²) 的二次方增长，是数学硬约束，不是加几块 GPU 就能解决的事。</p>
+  <p>因此所有号称"百万上下文"的模型，本质上都是在用 KV-Cache、量化、稀疏注意力等技巧，<b>让用户在算力预算内勉强看到更多 token</b>——而看不到的部分，对模型来说就是不存在。</p>
+</section>
+
+<!-- 4. 核心机制 -->
+<section>
+  <h2>4. 核心机制</h2>
+
+  <h3>4.1 Token：模型看到的最小单位</h3>
+  <p>模型不直接读文字，先把文字切成 token——可能是整词、子词、符号或标点。</p>
+  <pre><code>"unbelievable"  →  ["un", "believ", "able"]   // 3 个 token
+"大模型上下文"    →  ["大", "模型", "上下", "文"]  // 4 个 token</code></pre>
+  <p>上下文窗口的大小是按 <b>token 数</b> 算的，不是字数。模型先 tokenize，把 token 映射成高维向量（embedding），这些向量必须全部装进上下文窗口。</p>
+
+  <h3>4.2 自注意力：为什么是 O(N²)</h3>
+  <p>Transformer 用"自注意力"让每个 token 和窗口内其他所有 token 算一次关系分数：</p>
+  <pre><code>对于 N 个 token：
+Q = N × d    (Query 矩阵)
+K = N × d    (Key 矩阵)
+V = N × d    (Value 矩阵)
+Attention = softmax(Q × Kᵀ / √d) × V    // Q × Kᵀ 是 N×N 矩阵</code></pre>
+  <table>
+    <thead><tr><th>窗口 N</th><th>每层注意力运算量</th></tr></thead>
+    <tbody>
+      <tr><td>1,000</td><td>约 100 万次</td></tr>
+      <tr><td>8,000</td><td>约 6,400 万次</td></tr>
+      <tr><td>128,000</td><td>约 164 亿次</td></tr>
+      <tr><td>1,000,000</td><td>约 1 万亿次</td></tr>
+    </tbody>
+  </table>
+  <p>这就是为什么上下文窗口是<b>硬性架构边界</b>，不是软件开关。</p>
+
+  <h3>4.3 因果掩码（Causal Mask）：解码器只看到"过去"</h3>
+  <p>GPT/Claude 这类自回归模型用因果掩码，让 token i 只能看到位置 ≤ i 的 token。矩阵上三角被"遮住"：</p>
+  <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="因果掩码矩阵图">
+    <g font-family="-apple-system, sans-serif" font-size="13" fill="#1f2328">
+      <text x="170" y="20" text-anchor="middle" font-weight="600">T1  T2  T3  T4  (Key)</text>
+      <text x="35" y="60" text-anchor="end" font-weight="600">T1</text>
+      <text x="35" y="100" text-anchor="end" font-weight="600">T2</text>
+      <text x="35" y="140" text-anchor="end" font-weight="600">T3</text>
+      <text x="35" y="140" text-anchor="end" font-weight="600"></text>
+      <text x="35" y="180" text-anchor="end" font-weight="600">T4</text>
+    </g>
+    <g stroke="#57606a" stroke-width="1">
+      <rect x="60" y="40" width="40" height="40" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+      <rect x="100" y="40" width="40" height="40" fill="#f6f8fa" stroke="#9a6700"/>
+      <rect x="140" y="40" width="40" height="40" fill="#f6f8fa" stroke="#9a6700"/>
+      <rect x="180" y="40" width="40" height="40" fill="#f6f8fa" stroke="#9a6700"/>
+
+      <rect x="60" y="80" width="40" height="40" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+      <rect x="100" y="80" width="40" height="40" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+      <rect x="140" y="80" width="40" height="40" fill="#f6f8fa" stroke="#9a6700"/>
+      <rect x="180" y="80" width="40" height="40" fill="#f6f8fa" stroke="#9a6700"/>
+
+      <rect x="60" y="120" width="40" height="40" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+      <rect x="100" y="120" width="40" height="40" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+      <rect x="140" y="120" width="40" height="40" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+      <rect x="180" y="120" width="40" height="40" fill="#f6f8fa" stroke="#9a6700"/>
+
+      <rect x="60" y="160" width="40" height="40" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+      <rect x="100" y="160" width="40" height="40" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+      <rect x="140" y="160" width="40" height="40" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+      <rect x="180" y="160" width="40" height="40" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+    </g>
+    <g font-size="11" fill="#1f2328" text-anchor="middle">
+      <text x="80" y="225" fill="#1a7f37">可见</text>
+      <text x="150" y="225" fill="#9a6700">被掩码</text>
+    </g>
+  </svg>
+  <p>绿色=可见（左侧含自身），黄色=被掩码（不能看未来）。生成 T4 时只能基于 T1/T2/T3。</p>
+
+  <h3>4.4 KV-Cache：长上下文的显存代价</h3>
+  <p>每生成一个新 token，都要重新算前面所有 token 的注意力。KV-Cache 把已算过的 K/V 张量缓存下来，节省重复计算。但缓存大小<b>随窗口线性增长</b>，吃 GPU 显存。窗口翻倍，KV-Cache 显存也翻倍；这和注意力的二次方增长叠加，决定了上下文不可能无限扩展。</p>
+
+  <h3>4.5 "Lost in the Middle"：长上下文的隐形陷阱</h3>
+  <p>研究发现（Liu et al., 2023），当上下文变长，模型对<b>位于中间位置</b>的信息关注度明显下降，对开头和结尾的信息记得更牢（primacy bias + recency bias）。这意味着——把关键信息塞到长上下文的中间反而是最不靠谱的做法。</p>
+  <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="lost in the middle 示意图">
+    <line x1="40" y1="100" x2="560" y2="100" stroke="#57606a" stroke-width="1.5"/>
+    <text x="40" y="135" text-anchor="middle" font-size="12" fill="#57606a">开头</text>
+    <text x="560" y="135" text-anchor="middle" font-size="12" fill="#57606a">结尾</text>
+    <text x="300" y="135" text-anchor="middle" font-size="12" fill="#57606a">中间</text>
+    <path d="M 40 30 Q 200 30 300 95 Q 400 30 560 30" fill="none" stroke="#1a7f37" stroke-width="2.5"/>
+    <text x="300" y="20" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2328">模型对信息的关注度（U 形）</text>
+  </svg>
+</section>
+
+<!-- 5. 应用场景 -->
+<section>
+  <h2>5. 应用场景</h2>
+  <ol>
+    <li>
+      <b>多轮对话与"长会话失忆"</b><br>
+      谁在用：所有对话式产品（ChatGPT、Claude、Gemini、文心一言）。<br>
+      解决什么：让模型在一次会话内持续跟随用户上下文。<br>
+      效果与陷阱：当对话累计超过窗口大小，模型会丢失早期指令；产品通常用"摘要压缩"或"短期记忆模块"兜底。
+    </li>
+    <li>
+      <b>长文档问答 / 阅读（Claude 200K、GPT-4o 128K）</b><br>
+      谁在用：法律合同分析、论文综述、代码库理解。<br>
+      解决什么：把整本 PDF / 整个代码仓库塞进上下文，直接提问题。<br>
+      效果：可处理 500 页文档；但要注意"Lost in the middle"，关键条款最好放首尾。
+    </li>
+    <li>
+      <b>RAG（检索增强生成）</b><br>
+      谁在用：企业知识库、智能客服、技术文档助手。<br>
+      解决什么：把百万级文档拆 chunk 存入向量库，提问时只把最相关的若干 chunk 塞进上下文。<br>
+      效果：相比"硬塞整本书"，RAG 用更少 token 回答更准；同时缓解上下文窗口压力。
+    </li>
+    <li>
+      <b>代码助手（Cursor / Copilot Workspace / Claude Code）</b><br>
+      谁在用：开发者。<br>
+      解决什么：把整个项目文件读进上下文，让模型跨文件改 bug、生成测试。<br>
+      效果：长上下文让"全项目级"修改成为可能；同时倒逼各厂商扩窗口（Claude 1M、GPT-4.1 1M）。
+    </li>
+    <li>
+      <b>Agent 多步任务的"工作记忆"</b><br>
+      谁在用：Devin、Manus、Claude Computer Use。<br>
+      解决什么：Agent 每一步的"思考→行动→观察"结果都回写到上下文，作为下一步推理依据。<br>
+      效果：决定了一个 Agent 能连续执行多少步；窗口不够 = Agent 中途失忆、重复试错。
+    </li>
+  </ol>
+</section>
+
+<!-- 6. 概念辨析 -->
+<section>
+  <h2>6. 概念辨析</h2>
+
+  <h3>6.1 它是什么 / 不是什么</h3>
+  <p>上下文窗口 <b>是</b>：模型一次推理能"看到"的最大 token 序列，是 Transformer 的<b>硬性架构边界</b>。</p>
+  <p>上下文窗口 <b>不是</b>：模型的长期记忆、数据库、或可任意扩展的存储。超过它的内容对模型来说<b>就是不存在</b>。</p>
+
+  <h3>6.2 易混对照表</h3>
+  <table>
+    <thead><tr><th>维度</th><th>上下文窗口</th><th>系统提示（System Prompt）</th><th>RAG</th><th>长期记忆</th></tr></thead>
+    <tbody>
+      <tr><td>作用</td><td>决定一次推理的"视野"</td><td>在窗口开头注入人设/规则</td><td>从外部知识库检索并塞进窗口</td><td>跨会话保留用户偏好与历史</td></tr>
+      <tr><td>存储位置</td><td>GPU 显存（KV-Cache）</td><td>每次请求都附带</td><td>向量数据库 + 检索器</td><td>独立存储（文件/向量库）</td></tr>
+      <tr><td>占用 token</td><td>计数上限</td><td>占用窗口</td><td>占用窗口</td><td>只在被调入时占用</td></tr>
+      <tr><td>怎么区分</td><td>"我这一眼能看多远"</td><td>"我现在扮演什么角色"</td><td>"需要时去查资料"</td><td>"记住上次说过什么"</td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.3 适用前提与失效条件</h3>
+  <div class="callout good">
+    <b>适用场景：</b>单次任务、文档/对话规模可被窗口容纳、关键信息可放在首尾、对延迟敏感度可接受。
+  </div>
+  <div class="callout warn">
+    <b>失效条件：</b>
+    <ul>
+      <li>需要的知识总量 > 窗口（如要喂整本百科给模型做问答）——必须用 RAG。</li>
+      <li>多轮长对话超出窗口——会出现"开头失忆"，需配摘要压缩策略。</li>
+      <li>把关键事实塞在长上下文中段——触发 Lost in the middle，命中率骤降。</li>
+      <li>实时性极强 / 成本极敏感——长上下文 = 高延迟 + 高 token 费用，要权衡。</li>
+      <li>把窗口当"数据库"用——会快速烧光预算，且没有结构化查询能力。</li>
+    </ul>
+  </div>
+
+  <h3>6.4 常见误解</h3>
+  <ul>
+    <li><b>误解 1：</b>"1M 上下文 = 模型能像人一样读完百万 token"。<b>纠正：</b>能装下 ≠ 能用好；Lost in the middle 仍然存在，且越长越贵越慢。</li>
+    <li><b>误解 2：</b>"上下文窗口是软件限制，换更大的 GPU 就能扩"。<b>纠正：</b>限制来自注意力的 O(N²) 二次方增长，硬件只能换算力预算，不能消除数学约束。</li>
+    <li><b>误解 3：</b>"多轮对话会越来越聪明"。<b>纠正：</b>对话超出窗口后，早期信息对模型不再可见；如果不主动总结/注入，模型会"失忆"。</li>
+    <li><b>误解 4：</b>"有了长上下文就不需要 RAG 了"。<b>纠正：</b>RAG 不是"替代品"而是"补充品"——RAG 解决"知识更新与精确召回"，长上下文解决"当下任务视野"。</li>
+  </ul>
+</section>
+
+<!-- 7. 自测题 -->
+<section>
+  <h2>7. 自测题</h2>
+  <details>
+    <summary>Q1（概念复述）：用一句话向不懂技术的朋友解释"上下文窗口"。</summary>
+    <p><b>参考答案：</b>上下文窗口就是大模型一次能"同时看到"的最大文字量——超过这个量的内容模型直接看不见，就像人读书时短期记忆只够装 50 页，第 1 章的线索到了第 80 页就从脑子里掉了。</p>
+  </details>
+
+  <details>
+    <summary>Q2（机制理解）：为什么上下文窗口不能无限大？请用一个数学原因解释。</summary>
+    <p><b>参考答案：</b>因为 Transformer 的自注意力要让每个 token 跟窗口内所有其他 token 算关系，计算量是 O(N²) ——N 翻倍，运算量变成 4 倍。这是数学硬约束，加 GPU 也只是换预算，不能消除。</p>
+  </details>
+
+  <details>
+    <summary>Q3（应用判断）：你想做一个"问答整本公司制度手册"的助手，手册 800 页。该用"塞进上下文"还是"RAG"？为什么？</summary>
+    <p><b>参考答案：</b>用 RAG。800 页手册 token 量远超任何主流窗口；即使窗口够，也会命中 Lost in the middle 陷阱（用户问的关键词可能正好在中段）。RAG 把手册拆成 chunk 存入向量库，提问时只召回最相关的若干 chunk 塞进上下文，更省、更准、更稳。</p>
+  </details>
+
+  <details>
+    <summary>Q4（边界辨析）：有人说"有了百万 token 上下文，就不需要 RAG 了"。对吗？请用至少一条理由反驳。</summary>
+    <p><b>参考答案：</b>不对。RAG 的核心价值是"知识更新"和"精确召回"——长上下文每次都要把所有内容塞进去，token 费用高、延迟大；RAG 只检索相关的几个 chunk，成本低、精度高。另外 RAG 还能引用来源（可解释性）、对接结构化数据库（向量检索 + 元数据过滤），这些是上下文窗口本身做不到的。</p>
+  </details>
+
+  <details>
+    <summary>Q5（机制应用）：你做一个 Agent，让它"自动查 GitHub issue 并改 PR"。当 Agent 执行到第 30 步时开始"重复试错"，可能的原因是什么？怎么修？</summary>
+    <p><b>参考答案：</b>很可能是上下文窗口快满了——每一步"思考/观察"结果都堆进窗口，到第 30 步早期指令已被截断，Agent 失去"最初目标感"，开始循环。修法：(1) 主动做上下文摘要压缩，保留关键信息；(2) 把"任务目标"反复注入窗口；(3) 用 KV-Cache 优化降低单步成本；(4) 拆分任务为子任务、每完成一段就清空子任务的中间结果。</p>
+  </details>
+</section>
+
+<!-- 8. 参考来源 -->
+<section class="refs">
+  <h2>8. 参考来源</h2>
+  <ol>
+    <li>[IBM - What is a context window?](https://www.ibm.com/think/topics/context-window) — 上下文窗口定义、Transformer 自注意力机制、与计算成本关系的权威讲解。</li>
+    <li>[C# Corner - Context Window in Large Language Models](https://www.c-sharpcorner.com/article/context-window-in-large-language-models-llms/) — 因果掩码、滑窗机制、token 化过程的逐步解释。</li>
+    <li>[JumpCloud - What Is a Context Window?](https://jumpcloud.com/it-index/what-is-a-context-window) — 注意力机制公式、KV-Cache 显存影响、Lost in the middle。</li>
+    <li>[Inferensys - Context Window](https://inferensys.com/glossary/answer-engine-architecture/conversational-context-management/context-window) — "Lost in the middle"、Context Poisoning、Context Collapse 等失效模式。</li>
+    <li>[The Neural Base - Context window: the model's working memory](https://theneuralbase.com/context-window/learn/beginner/context-window-the-model-s-working-memory) — 通俗类比（50 页小说）、O(N²) 数学解释、工程优化方向。</li>
+    <li>[Liu et al., 2023 - Lost in the Middle (原始论文摘要)](https://arxiv.org/abs/2307.03172) — 关键论文，证实长上下文中段信息利用度下降。</li>
+  </ol>
+  <p class="footer-note">时效性提示：上下文窗口上限随厂商版本快速变化（2024 年 Claude 200K、2025 年部分模型达 1M），以官方最新文档为准。</p>
+</section>
+
+<!-- 9. 核查记录 -->
+<section>
+  <h2>9. 核查记录</h2>
+  <table class="meta-table">
+    <tr><td>检索关键词</td><td>context window LLM transformer; self-attention O(N²); lost in the middle paper; KV-Cache; RAG vs long context</td></tr>
+    <tr><td>来源数量</td><td>6 条（2 条技术媒体、1 条企业博客、1 条术语表、1 条教学站、1 条原始论文）</td></tr>
+    <tr><td>关键论断支撑</td><td>O(N²) 复杂度、KV-Cache 显存、Lost in the middle 现象、因果掩码机制均 ≥1 条来源</td></tr>
+    <tr><td>待核实推断</td><td>"Anthropic 2024 年 200K、2025 年部分模型 1M"为业界信息汇总，未直接引用厂商官方页面，已在结尾标注"以官方最新文档为准"</td></tr>
+    <tr><td>人工核查时间</td><td>2026-09-04</td></tr>
+    <tr><td>核查人</td><td>lishiyi69</td></tr>
+  </table>
+</section>
+
+</div>
+</body>
+</html>

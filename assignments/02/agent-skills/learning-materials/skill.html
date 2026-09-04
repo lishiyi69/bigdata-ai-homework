@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill 概念学习资料</title>
+<style>
+  :root {
+    --c-bg: #fafafa;
+    --c-card: #ffffff;
+    --c-text: #1f2328;
+    --c-muted: #57606a;
+    --c-border: #d0d7de;
+    --c-accent: #cf222e;
+    --c-accent-bg: #ffebe9;
+    --c-warn: #9a6700;
+    --c-warn-bg: #fff8c5;
+    --c-good: #1a7f37;
+    --c-good-bg: #dafbe1;
+    --c-code-bg: #f6f8fa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--c-bg);
+    color: var(--c-text);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    line-height: 1.7;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 32px 24px 80px; }
+  header.hero {
+    background: linear-gradient(135deg, #ffebe9 0%, #f6f8fa 100%);
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    padding: 28px 28px 24px;
+    margin-bottom: 24px;
+  }
+  header.hero h1 { margin: 0 0 6px; font-size: 28px; }
+  header.hero .meta { color: var(--c-muted); font-size: 14px; }
+  header.hero .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    background: var(--c-accent); color: #fff; font-size: 12px; margin-right: 6px;
+  }
+  section {
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  h2 {
+    font-size: 20px; margin: 0 0 14px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--c-accent-bg);
+  }
+  h3 { font-size: 16px; margin: 16px 0 8px; color: var(--c-accent); }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 24px; }
+  li { margin: 4px 0; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px;
+  }
+  th, td { border: 1px solid var(--c-border); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--c-code-bg); font-weight: 600; }
+  .callout {
+    border-left: 4px solid var(--c-accent);
+    background: var(--c-accent-bg);
+    padding: 10px 14px; border-radius: 0 6px 6px 0;
+    margin: 12px 0; font-size: 14px;
+  }
+  .warn { border-left-color: var(--c-warn); background: var(--c-warn-bg); }
+  .good { border-left-color: var(--c-good); background: var(--c-good-bg); }
+  code, pre {
+    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px;
+  }
+  code { background: var(--c-code-bg); padding: 1px 6px; border-radius: 4px; }
+  pre {
+    background: var(--c-code-bg); padding: 12px 14px; border-radius: 6px;
+    overflow-x: auto;
+  }
+  details { margin: 8px 0; }
+  summary {
+    cursor: pointer; font-weight: 600; color: var(--c-accent);
+    padding: 6px 0;
+  }
+  details[open] summary { margin-bottom: 6px; }
+  .refs ol { padding-left: 24px; }
+  .refs li { margin: 6px 0; font-size: 14px; }
+  .meta-table td:first-child { width: 160px; font-weight: 600; background: var(--c-code-bg); }
+  svg { display: block; margin: 12px auto; max-width: 100%; height: auto; }
+  .footer-note {
+    color: var(--c-muted); font-size: 13px; text-align: center; margin-top: 28px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>Skill 概念学习资料</h1>
+  <div class="meta">
+    <span class="badge">概念</span>
+    <span class="badge">AI Agent / 模块化提示</span>
+    生成于 2026-09-04 · 使用 concept-study-pack Skill
+  </div>
+  <p>学完这份资料，你将能用自己的话解释"Skill（技能）"是什么、它的内部结构、它和 Prompt / Project / Subagent / MCP 的区别，以及它如何解决"团队经验沉淀"和"上下文占用"两个老大难问题。</p>
+</header>
+
+<!-- 1. 学习目标 -->
+<section>
+  <h2>1. 学习目标</h2>
+  <ol>
+    <li>用自己的话解释"Skill 是什么"以及它解决的核心问题（重复 prompt + 上下文浪费）。</li>
+    <li>描述一个 Skill 的标准结构（YAML 元数据 + Markdown 指令 + 可选脚本/资源）。</li>
+    <li>区分 Skill、Prompt、Project、Subagent、MCP 五个易混概念，能说出它们各解决什么。</li>
+    <li>理解 Skill 的"按需加载"机制如何节省上下文窗口。</li>
+    <li>知道 Skill 的适用场景（重复性任务、需要一致性的工作）和不适用场景（一次性探索）。</li>
+  </ol>
+</section>
+
+<!-- 2. 核心问题 -->
+<section>
+  <h2>2. 核心问题</h2>
+  <ol>
+    <li>为什么 Anthropic / OpenAI / Cursor 等厂商要专门做"Skill"这个抽象？</li>
+    <li>一个 Skill 物理上长什么样？最少需要哪些文件？</li>
+    <li>Skill 是怎么知道"该不该用"的？是用户手动指定还是自动触发？</li>
+    <li>Skill 和一段长长的 system prompt 有什么本质区别？</li>
+    <li>Skill 能解决上下文窗口压力吗？为什么？</li>
+  </ol>
+</section>
+
+<!-- 3. 个人解释 -->
+<section>
+  <h2>3. 个人解释</h2>
+  <div class="callout">
+    一句话：<b>Skill 是把"做某件事的最佳实践"打包成一个文件夹，让 AI Agent 在需要时按需加载、按说明执行</b>——它是 AI 的"工作手册"，而不是"人设剧本"。
+  </div>
+  <p>把这件事想成你给新员工编写的"操作 SOP"。一份好的 SOP 包含：标题（这份 SOP 是干嘛的）、适用场景（什么时候用）、具体步骤（先做什么后做什么）、配套资源（表单、脚本、模板）。Skill 就是给 AI 的 SOP，物理上就是这样的一个文件夹。</p>
+  <p>它和普通 prompt 的关键区别在于三件事：第一，<b>按需加载</b>——Skill 不一直在上下文里，Agent 只在判断"这个任务和某个 Skill 相关"时才把它读进上下文，省 token；第二，<b>可复用</b>——同一个 Skill 可以在多个会话、多个项目、多个 Agent 里使用，可以放进 Git 做版本管理、团队共享；第三，<b>结构化</b>——SKILL.md 顶部有 YAML 元数据（name、description、触发条件），机器可读，便于自动发现和路由。</p>
+  <p>Anthropic 在 2025 年 10 月正式推出 Agent Skills 时，把它定义为"包含指令、脚本、资源的文件夹，Claude 在需要时按需加载"——本质上是用文件系统+版本控制解决"AI 团队经验沉淀"问题。</p>
+</section>
+
+<!-- 4. 核心机制 -->
+<section>
+  <h2>4. 核心机制</h2>
+
+  <h3>4.1 一个 Skill 的标准结构</h3>
+  <pre><code>my-skill/
+├── SKILL.md          # 必需：YAML 元数据 + Markdown 指令
+├── scripts/          # 可选：可执行脚本
+│   └── validate.sh
+├── examples/         # 可选：示例输入/输出
+│   └── good-output.md
+├── templates/        # 可选：模板文件
+│   └── report-template.md
+└── LICENSE.txt       # 可选：许可证</code></pre>
+
+  <h3>4.2 SKILL.md 的 YAML 元数据</h3>
+  <pre><code>---
+name: internal-comms
+description: 一组帮用户撰写公司内部沟通的资料，按公司偏好格式输出。当用户要求写 3P 更新、公司通讯、FAQ、状态汇报等内部沟通时使用。
+license: 完整条款见 LICENSE.txt
+---</code></pre>
+  <p>关键字段：</p>
+  <ul>
+    <li><code>name</code>：技能名（同文件夹名）</li>
+    <li><code>description</code>：触发条件 + 用途说明。Agent 靠这段描述判断要不要加载</li>
+    <li><code>license</code> / <code>allowed-tools</code>（可选）：限制 Skill 的能力边界</li>
+  </ul>
+
+  <h3>4.3 按需加载（Dynamic Loading）</h3>
+  <p>Skill 的"魔法"在于它默认不占用上下文：</p>
+  <svg viewBox="0 0 620 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Skill 按需加载流程">
+    <defs>
+      <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#cf222e"/>
+      </marker>
+    </defs>
+    <rect x="20" y="40" width="140" height="60" rx="8" fill="#ffebe9" stroke="#cf222e" stroke-width="1.5"/>
+    <text x="90" y="75" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2328">用户请求</text>
+
+    <rect x="200" y="40" width="160" height="60" rx="8" fill="#fff8c5" stroke="#9a6700" stroke-width="1.5"/>
+    <text x="280" y="70" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2328">Agent 扫描可用 Skill</text>
+    <text x="280" y="88" text-anchor="middle" font-size="11" fill="#57606a">匹配 description</text>
+
+    <rect x="400" y="20" width="200" height="40" rx="8" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5"/>
+    <text x="500" y="45" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2328">命中 → 加载 SKILL.md</text>
+
+    <rect x="400" y="80" width="200" height="40" rx="8" fill="#f6f8fa" stroke="#57606a" stroke-width="1.5"/>
+    <text x="500" y="105" text-anchor="middle" font-size="12" fill="#1f2328">未命中 → 跳过</text>
+
+    <line x1="160" y1="70" x2="200" y2="70" stroke="#cf222e" stroke-width="1.5" marker-end="url(#arr2)"/>
+    <line x1="360" y1="60" x2="400" y2="40" stroke="#cf222e" stroke-width="1.5" marker-end="url(#arr2)"/>
+    <line x1="360" y1="80" x2="400" y2="100" stroke="#cf222e" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+    <text x="310" y="170" text-anchor="middle" font-size="12" fill="#57606a">只有命中的 Skill 才进上下文窗口 → 节省 token / 减少冲突</text>
+  </svg>
+
+  <h3>4.4 四大核心属性（Anthropic 总结）</h3>
+  <table>
+    <thead><tr><th>属性</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td><b>Composable（可组合）</b></td><td>多个 Skill 可堆叠，Agent 自动协调使用</td></tr>
+      <tr><td><b>Portable（可移植）</b></td><td>同一 Skill 可在 Claude.ai / Claude Code / API 中通用，格式统一</td></tr>
+      <tr><td><b>Efficient（高效）</b></td><td>按需加载，只读入必要内容，节省上下文</td></tr>
+      <tr><td><b>Powerful（强大）</b></td><td>可包含可执行代码，在 token 生成不如传统编程可靠的任务上发挥作用</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 5. 应用场景 -->
+<section>
+  <h2>5. 应用场景</h2>
+  <ol>
+    <li>
+      <b>企业品牌与格式规范</b><br>
+      谁在用：Box、Notion、Canva（Anthropic 客户案例）。<br>
+      解决什么：让 AI 生成的 PPT/Word/Excel 自动套用公司模板与品牌色。<br>
+      效果：Notion PM MJ Felix 称"减少 prompt 调教，输出更可预测"。
+    </li>
+    <li>
+      <b>代码评审 / 团队工程规范</b><br>
+      谁在用：使用 Claude Code 的研发团队。<br>
+      解决什么：把团队的 PR Review 标准、命名规范、安全检查清单做成 Skill，AI 自动按规范评审。<br>
+      效果：每次评审都一致；新人也"自动"按老规矩写代码。
+    </li>
+    <li>
+      <b>金融建模与财务分析</b><br>
+      谁在用：Anthropic 内置 Skill + 第三方。<br>
+      解决什么：DCF、Comps Analysis 等重复性分析流程模板化。<br>
+      效果：Anthropic 客户 Kaji 反馈"原本 1 天的管理工作 1 小时完成"。
+    </li>
+    <li>
+      <b>研发工作流自动化（Claude Code）</b><br>
+      谁在用：个人开发者、Anthropic 团队。<br>
+      解决什么：把"提交 PR→跑测试→生成 changelog"这类多步流程做成 Skill，命令行一键调用。<br>
+      效果：日常工程操作可重复、可分享、可版本化。
+    </li>
+    <li>
+      <b>教学与作业辅助（本次作业的元场景）</b><br>
+      谁在用：开发者、课程设计者。<br>
+      解决什么：把"如何为任意概念生成结构化学习资料"做成 Skill，AI 在面对新概念时按统一框架输出。<br>
+      效果：同一次实现中可生成 Agent / 上下文 / Skill 三份资料，框架一致，质量稳定。
+    </li>
+  </ol>
+</section>
+
+<!-- 6. 概念辨析 -->
+<section>
+  <h2>6. 概念辨析</h2>
+
+  <h3>6.1 它是什么 / 不是什么</h3>
+  <p>Skill <b>是</b>：用文件夹组织的、可被 Agent 按需加载的"工作手册"，包含指令、脚本、参考资源。</p>
+  <p>Skill <b>不是</b>：永久占据上下文的 system prompt、独立的 AI 模型、也不只是"提示词模板"。它是<b>模块化、可发现、可执行</b>的复合体。</p>
+
+  <h3>6.2 易混对照表（Prompt / Project / Subagent / MCP / Skill）</h3>
+  <table>
+    <thead><tr><th>维度</th><th>Prompt</th><th>Project</th><th>Subagent</th><th>MCP</th><th><b>Skill</b></th></tr></thead>
+    <tbody>
+      <tr><td>作用</td><td>一次性指令</td><td>带上下文的会话空间</td><td>独立执行任务的子 AI</td><td>连接外部数据/工具的协议</td><td>沉淀做事方法的能力包</td></tr>
+      <tr><td>持久性</td><td>不跨会话</td><td>跨会话</td><td>按需创建</td><td>长期运行</td><td>长期保存，可版本化</td></tr>
+      <tr><td>占上下文</td><td>每次占用</td><td>知识库可 RAG 扩展</td><td>独立窗口</td><td>不占（按需调用）</td><td>按需加载，不命中不占</td></tr>
+      <tr><td>类比</td><td>口头指令</td><td>专属办公室</td><td>外包同事</td><td>USB 接口</td><td>工作手册 + 工具箱</td></tr>
+      <tr><td>何时选</td><td>一次性对话</td><td>持续主题工作</td><td>需要隔离的子任务</td><td>接外部数据源</td><td>重复性 + 需一致性的工作</td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.3 适用前提与失效条件</h3>
+  <div class="callout good">
+    <b>适用场景：</b>工作流反复出现 / 团队需要统一标准 / 任务对一致性要求高 / 涉及代码或文件操作。
+  </div>
+  <div class="callout warn">
+    <b>不适用：</b>
+    <ul>
+      <li>一次性探索性对话（用 Prompt 即可）</li>
+      <li>每次任务路径都不一样的开放式问题（无法模板化）</li>
+      <li>纯知识问答（用 Project + RAG 更合适）</li>
+      <li>需要独立隔离环境的并行任务（用 Subagent）</li>
+    </ul>
+  </div>
+
+  <h3>6.4 常见误解</h3>
+  <ul>
+    <li><b>误解 1：</b>"Skill 就是包装了一下 prompt"。<b>纠正：</b>Skill 是带目录结构 + 描述路由 + 可执行脚本的复合体，且默认不占上下文——这两点 prompt 都做不到。</li>
+    <li><b>误解 2：</b>"Skill 越多越好"。<b>纠正：</b>每个 Skill 的 description 都会被扫描用于匹配，太多反而拖慢路由、增加误触发，要做"少而精"。</li>
+    <li><b>误解 3：</b>"Skill 可以替代工具调用"。<b>纠正：</b>Skill 是"做事的方法"，要做事仍要工具（API / 文件系统 / 代码执行）。Skill 与 MCP（连接数据/工具）配合，不是替代。</li>
+    <li><b>误解 4：</b>"Skill 是 Claude 独有的概念"。<b>纠正：</b>Anthropic 把它打包成产品形态，但"模块化提示 + 文件系统加载"在 LangChain、Cursor 等产品中都有类似思想。Anthropic 的贡献是把它标准化、跨平台化。</li>
+  </ul>
+</section>
+
+<!-- 7. 自测题 -->
+<section>
+  <h2>7. 自测题</h2>
+  <details>
+    <summary>Q1（概念复述）：用一句话向同事解释"AI Skill 是什么"。</summary>
+    <p><b>参考答案：</b>Skill 是给 AI 的"工作 SOP 手册"——一个文件夹里装着"何时用、怎么用、配什么脚本"的说明，AI 在接到相关任务时按需加载，按手册执行。</p>
+  </details>
+
+  <details>
+    <summary>Q2（结构理解）：一个标准的 Skill 至少需要什么文件？该文件最关键的两个字段是什么？</summary>
+    <p><b>参考答案：</b>至少需要 SKILL.md（YAML 元数据 + Markdown 指令）。最关键的两个字段是 <code>name</code>（技能名）和 <code>description</code>（触发条件 + 用途），Agent 靠 description 判断要不要加载。</p>
+  </details>
+
+  <details>
+    <summary>Q3（应用判断）：团队每周都让 AI 按固定格式写周报，应该用什么机制？</summary>
+    <p><b>参考答案：</b>用 Skill。把"周报模板、章节顺序、收尾要求"写成 SKILL.md，AI 每次接到"写周报"任务时自动加载、按模板出稿。比起每次都贴一大段 prompt，Skill 既省上下文，又能保证格式统一、新人也能立刻用上。</p>
+  </details>
+
+  <details>
+    <summary>Q4（边界辨析）：有人说"有了 Skill 就不需要 system prompt 了"。对吗？为什么？</summary>
+    <p><b>参考答案：</b>不对。System prompt 管的是 AI 的"人设/全局规则"（如"你是专业客服、永远用敬语"），是每次会话都生效的固定身份；Skill 管的是"做某类事的方法"，是按需加载的模块。两者层次不同：身份设定 + 多个专项能力手册 = 完整的 Agent 配置。</p>
+  </details>
+
+  <details>
+    <summary>Q5（元思考）：观察本作业项目中的 <code>.workbuddy/skills/concept-study-pack/SKILL.md</code>，它体现了 Skill 的哪些核心属性？</summary>
+    <p><b>参考答案：</b>体现了 (1) Composable：可与其它 Skill 并存；(2) Portable：纯文本 + Markdown，可跨 WorkBuddy / Claude Code / API 使用；(3) Efficient：默认不占上下文，按 description 触发时加载；(4) Powerful：含自检要求与生成步骤，结构化产 HTML。YAML 元数据里 <code>name: concept-study-pack</code> 和 <code>description</code> 是触发入口；正文则规定了输入信息、输出结构、来源要求等"工作手册"内容。</p>
+  </details>
+</section>
+
+<!-- 8. 参考来源 -->
+<section class="refs">
+  <h2>8. 参考来源</h2>
+  <ol>
+    <li>[Anthropic - Introducing Agent Skills (官方公告)](https://www.anthropic.com/news/skills) — Skill 的官方定义、四大属性、跨产品支持。</li>
+    <li>[Anthropic - Skills 产品页](https://claude.com/redirect/claudedotcom.v1.0cddd531-7759-4d13-a174-6a0fc3ec8680/skills) — 客户案例（Box、Notion、Canva）、技能组合示例。</li>
+    <li>[Anthropic - Skills explained: How Skills compares to prompts, Projects, MCP, and subagents](https://claude.com/blog/skills-explained) — 五概念辨析（Prompt/Project/Subagent/MCP/Skill）权威讲解。</li>
+    <li>[Zapier - Claude Skills: Build repeatable workflows in Claude](https://www.zapier.com/blog/claude-skills) — 实践视角：何时用 Skill、何时用 Project。</li>
+    <li>[Developer Playground - Claude Skills: Modular Prompt Engineering for Backend Engineers](https://developer-playground.com/blog/software-engineer/list/claude-skills-guide) — SKILL.md 文件结构、Token 效率、代码示例。</li>
+  </ol>
+  <p class="footer-note">时效性提示：Skill 是 2025 年 10 月才正式公开的产品概念，相关产品形态仍在演进，结构与功能可能继续调整，以官方最新文档为准。</p>
+</section>
+
+<!-- 9. 核查记录 -->
+<section>
+  <h2>9. 核查记录</h2>
+  <table class="meta-table">
+    <tr><td>检索关键词</td><td>Anthropic Claude Skills definition; Agent Skills vs prompt project MCP; SKILL.md structure</td></tr>
+    <tr><td>来源数量</td><td>5 条（3 条 Anthropic 官方 + 1 条第三方技术博客 + 1 条工具厂商博客）</td></tr>
+    <tr><td>关键论断支撑</td><td>Skill 定义、按需加载、四大属性、SKILL.md 结构、五概念区分均 ≥1 条来源</td></tr>
+    <tr><td>待核实推断</td><td>"Anthropic 2025 年 10 月推出 Skill"为业界普遍信息，已在结尾标注"以官方最新文档为准"</td></tr>
+    <tr><td>人工核查时间</td><td>2026-09-04</td></tr>
+    <tr><td>核查人</td><td>lishiyi69</td></tr>
+  </table>
+</section>
+
+</div>
+</body>
+</html>
